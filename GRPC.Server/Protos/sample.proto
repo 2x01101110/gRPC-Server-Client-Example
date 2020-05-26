@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option csharp_namespace = "GRPC.Server.Protos";
+
+package sample;
+
+service Sample {
+	// A simple RPC where the client sends a request to the server using the client object and waits 
+	// for a response to come back, just like a normal function call.
+	rpc SimpleRPC (SimpleRPCRequest) returns (SimpleRPCResponse);
+
+	// A server-side streaming RPC where the client sends a request to the server and gets a stream 
+	// to read a sequence of messages back. The client reads from the returned stream until there are no more messages.
+	rpc ServerSideStreamingRPC (EmptyRequest) returns (stream SimpleRPCResponse);
+
+	// A client-side streaming RPC where the client writes a sequence of messages and sends them to the server, again 
+	// using a provided stream. Once the client has finished writing the messages, it waits for the server to read them all and return its response.
+	rpc ClientSideStreamingRPC (stream SimpleRPCRequest) returns (SimpleRPCResponse);
+
+	// A bidirectional streaming RPC where both sides send a sequence of messages using a read-write stream.
+	rpc BidirectionalStreamingRPC (stream SimpleRPCRequest) returns (stream SimpleRPCResponse);
+
+	rpc SimpleRPCComplexRequestMessage (ComplexRPCMessage) returns (SimpleRPCResponse);
+}
+
+message SimpleRPCRequest {
+	string text = 1;
+}
+
+message SimpleRPCResponse {
+	string text = 1;
+}
+
+message EmptyRequest {
+} 
+
+message ComplexRPCMessage {
+	enum ClientType {
+		Admin = 0;
+		client = 1;
+	}
+	ClientType clientType = 1;
+	repeated ClientRole clientRoles = 2;
+	message ClientAction {
+		string name = 1;
+		message ActionParameters {
+			string name = 1;
+			string value = 2;
+		}
+		repeated ActionParameters actionParameters = 2;
+	}
+	repeated ClientAction clientActions = 3;
+}
+
+message ClientRole {
+	int32 id = 1;
+	string name = 2;
+}

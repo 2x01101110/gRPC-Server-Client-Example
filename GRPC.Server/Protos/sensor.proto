@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option csharp_namespace = "GRPC.Server.Protos";
+
+package Sensor;
+
+service Sensor {
+	rpc CheckServiceHealth (ServiceStatusRequest) returns (ServiceStatusResponse);
+	rpc UpdateStatus (SensorStatusRequest) returns (SensorStatusReceivedResponse);
+	rpc Readings (stream SensorReadingValuesRequest) returns (SensorReadingValuesReceivedResponse);
+	rpc ReceiveCommands (ServerToSensorCommandsRequest) returns (stream ServerToSensorCommandsResponse);
+}
+
+message ServiceStatusRequest {
+	int32 id = 1;
+}
+
+message ServiceStatusResponse {
+	int64 uptime = 1;
+}
+
+message SensorStatusRequest {
+	int32 id = 1;
+	int32 uptime = 2;
+	message RuntimeErrors {
+		enum ErrorSeverity {
+			Informational = 0;
+			Warning = 1;
+			Critical = 2;
+		}
+		ErrorSeverity errorSeverity = 1;
+		int32 errorCode = 2;
+		string errorMessage = 3;
+	}
+	repeated RuntimeErrors errors = 3;
+}
+
+message SensorStatusReceivedResponse {}
+
+message SensorReadingValuesRequest {
+	int32 id = 1;
+	string valueTimeUtc = 2;
+	message SensorReading {
+		string field = 1;
+		float value = 2;
+	}
+	repeated SensorReading sensorReadings = 3;
+}
+
+message SensorReadingValuesReceivedResponse {}
+
+message ServerToSensorCommandsRequest {
+	int32 id = 1;
+}
+
+message ServerToSensorCommandsResponse {
+	string command = 1;
+}
