@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\sample.proto" GrpcServices="Server" />
     <Protobuf Include="Protos\sensor.proto" GrpcServices="Server" />
   </ItemGroup>
 

@@ -16,63 +16,72 @@ namespace GRPC.Server.Services
             this.logger = logger;
         }
 
-        public override Task<ServiceStatusResponse> CheckServiceHealth(
-            ServiceStatusRequest request, ServerCallContext context)
-        {
-            logger.LogInformation($"Server status update request received from sensor {request.Id}");
-
-            return Task.FromResult(new ServiceStatusResponse
-            {
-                Uptime = 1000
-            });
-        }
-
-        public override Task<SensorStatusReceivedResponse> UpdateStatus(
-            SensorStatusRequest request, ServerCallContext context)
+        public override Task<EmptyResponse> Status(SensorStatus request, ServerCallContext context)
         {
             logger.LogInformation($"Sensor {request.Id} status update received");
             logger.LogInformation(JsonConvert.SerializeObject(request, Formatting.Indented));
 
-            // Receive status and store in sql/nosql
-
-            return Task.FromResult(new SensorStatusReceivedResponse { });
+            return Task.FromResult(new EmptyResponse { });
         }
 
-        public override async Task<SensorReadingValuesReceivedResponse> Readings(
-            IAsyncStreamReader<SensorReadingValuesRequest> requestStream, ServerCallContext context)
+        public override async Task RequestCommands(CommandsRequest request,
+            IServerStreamWriter<CommandResponse> responseStream, ServerCallContext context)
         {
-            var readings = new List<SensorReadingValuesRequest>();
+            logger.LogInformation($"Sensor {request.Id} requested commands");
 
-            logger.LogInformation($"Sensor streaming readings");
+            var commands = new List<string> { "sendStatus", "sendReadings" };
 
-            while (await requestStream.MoveNext())
+            var random = new Random();
+
+            await responseStream.WriteAsync(new CommandResponse
             {
-                logger.LogInformation(JsonConvert.SerializeObject(requestStream.Current, Formatting.Indented));
-                readings.Add(requestStream.Current);
-            }
-
-            // Receive status and store in sql/nosql
-
-            return await Task.FromResult(new SensorReadingValuesReceivedResponse { });
+                Command = commands[random.Next(0, 1)]
+            });
         }
 
 
-        public override async Task ReceiveCommands(ServerToSensorCommandsRequest request, 
-            IServerStreamWriter<ServerToSensorCommandsResponse> responseStream, ServerCallContext context)
-        {
-            logger.LogInformation($"Sensor {request.Id} requests commands");
 
-            var commands = new List<string> { "stream_values", "update_status" };
 
-            foreach (var command in commands)
-            {
-                await responseStream.WriteAsync(new ServerToSensorCommandsResponse
-                {
-                    Command = command
-                });
 
-                await Task.Delay(1000);
-            }
-        }
+        //public override Task<EmptyResponse> Reading(SensorReadings request, ServerCallContext context)
+        //{
+        //    logger.LogInformation($"Received reading from sensor {request.Id}");
+
+        //    return Task.FromResult(new EmptyResponse { });
+        //}
+
+        //public override async Task<EmptyResponse> Readings(
+        //    IAsyncStreamReader<SensorReadings> requestStream, ServerCallContext context)
+        //{
+        //    logger.LogInformation($"Sensor streaming readings");
+
+        //    while (await requestStream.MoveNext())
+        //    {
+        //        logger.LogInformation(JsonConvert.SerializeObject(requestStream.Current, Formatting.Indented));
+        //    }
+
+        //    // Receive status and store in sql/nosql
+
+        //    return await Task.FromResult(new EmptyResponse { });
+        //}
+
+        //public override async Task RequestCommands(CommandsRequest request,
+        //    IServerStreamWriter<CommandsResponse> responseStream, ServerCallContext context)
+        //{
+        //    logger.LogInformation($"Sensor {request.Id} requests commands");
+
+        //    var commands = new List<string> { "stream_values", "update_status" };
+
+        //    foreach (var command in commands)
+        //    {
+        //        await responseStream.WriteAsync(new CommandsResponse
+        //        {
+        //            Command = command
+        //        });
+
+        //        await Task.Delay(1000);
+        //    }
+        //}
+
     }
 }
