@@ -31,22 +31,45 @@ class gRPCClient {
     });
   }
 
-  requestCommands(id, commandCallback) {
+  streamReadings() {
+
     return new Promise((resolve, reject) => {
-      const commandRequest = this.client.RequestCommands({ id });
-
-      commandRequest.on("data", (data) => {
-        commandCallback(data);
-      });
-
-      commandRequest.on("error", (error) => {
+      const stream = this.client.ReadingsStream((error) => {
         reject(error);
       });
-
-      commandRequest.on('end', () => {
-        resolve();
+      resolve({ 
+        write: (reading) => new Promise((resolve, e) => {
+          console.log('writing');
+          stream.write(reading);
+          resolve();
+        }), 
+        end: () => new Promise((resolve, e) => {
+          console.log('ending');
+          stream.end();
+          resolve();
+        })
       });
     });
+
+
+
+
+
+    // return new Promise((resolve, reject) => {
+    //   const commandRequest = this.client.RequestCommands({ id });
+
+    //   commandRequest.on("data", (data) => {
+    //     commandCallback(data);
+    //   });
+
+    //   commandRequest.on("error", (error) => {
+    //     reject(error);
+    //   });
+
+    //   commandRequest.on('end', () => {
+    //     resolve();
+    //   });
+    // });
   }
 }
 

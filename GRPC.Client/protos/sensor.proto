@@ -5,36 +5,26 @@ option csharp_namespace = "GRPC.Server.Protos";
 package sensor;
 
 service Sensor {
-	rpc Status (Status) returns (EmptyResponse);
-	rpc RequestCommands (CommandsRequest) returns (stream CommandResponse);
+	rpc Status (SensorStatus) returns (SensorCommands);
+	rpc ReadingsStream (stream SensorReadings) returns (BlankResponse);
 }
 
-message EmptyRequest {
-}
-
-message EmptyResponse {
-}
-
-message Status {
-	int32 id = 1;
+message SensorStatus {
+	int32 sensorId = 1;
 	int32 uptime = 2;
-	message RuntimeErrors {
-		enum ErrorSeverity {
-			Informational = 0;
-			Warning = 1;
-			Critical = 2;
-		}
-		ErrorSeverity errorSeverity = 1;
-		int32 errorCode = 2;
-		string errorMessage = 3;
+}
+
+message SensorCommands {
+	repeated string commands = 1;
+}
+
+message SensorReadings {
+	int32 sensorId = 1;
+	message ReadingValue {
+		string field = 1;
+		float value = 2;
 	}
-	repeated RuntimeErrors errors = 3;
+	repeated ReadingValue readingValues = 2;
 }
 
-message CommandsRequest {
-	int32 id = 1;
-}
-
-message CommandResponse {
-	string command = 1;
-}
+message BlankResponse {}
